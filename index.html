@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>fall-vetter · guild signup gate · R2</title>
+<meta name="description" content="Drop-in pre-block for guild signups · validate name/email · LinkedIn or social fallback · sovereign single-file.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Mono:wght@400;500&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ox: #8b1a1a;
+    --brass: #b8974a;
+    --gold: #d4a853;
+    --cream: #c4bfb2;
+    --void: #0b0a0f;
+    --surface: #14131a;
+    --border: #2a2730;
+    --muted: #6f6b78;
+    --green: #4a8a4a;
+    --amber: #c87e3a;
+    --red: #c8371a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--void); color: var(--cream); font-family: 'Syne', system-ui, sans-serif; min-height: 100vh; }
+  body { background-image: radial-gradient(at 15% 0%, rgba(139,26,26,0.07) 0%, transparent 40%), radial-gradient(at 85% 100%, rgba(184,151,74,0.05) 0%, transparent 35%); }
+  header { padding: 28px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-family: 'Libre Baskerville', serif; font-size: 22px; margin: 0; letter-spacing: 0.02em; }
+  header h1 em { color: var(--gold); font-style: normal; }
+  header .meta { font-family: 'DM Mono'; font-size: 11px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  main { max-width: 1200px; margin: 0 auto; padding: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); padding: 24px; }
+  .card h2 { font-family: 'Libre Baskerville', serif; font-size: 18px; margin: 0 0 14px; color: var(--cream); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .field { margin-bottom: 14px; }
+  .field label { font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+  .field input, .field textarea {
+    width: 100%; background: var(--void); border: 1px solid var(--border); color: var(--cream);
+    padding: 10px 12px; font-family: 'DM Mono'; font-size: 13px;
+  }
+  .field input:focus, .field textarea:focus { outline: 1px solid var(--gold); outline-offset: -1px; }
+  .btn {
+    background: var(--ox); color: var(--cream); border: none; padding: 12px 24px;
+    font-family: 'Syne'; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 12px; cursor: pointer; transition: background 0.15s;
+  }
+  .btn:hover { background: var(--gold); color: var(--void); }
+  .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--cream); }
+  .btn.ghost:hover { border-color: var(--gold); color: var(--gold); background: transparent; }
+  .verdict {
+    padding: 18px; border: 1px solid var(--border); margin-top: 14px; background: var(--void);
+    font-family: 'DM Mono'; font-size: 13px;
+  }
+  .verdict .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .verdict .badge { font-family: 'Syne'; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; font-size: 11px; padding: 6px 12px; }
+  .badge.allow  { background: var(--green);  color: white; }
+  .badge.review { background: var(--amber);  color: white; }
+  .badge.block  { background: var(--red);    color: white; }
+  .verdict .score { font-family: 'Libre Baskerville', serif; font-size: 24px; color: var(--gold); }
+  .verdict ul { margin: 0; padding-left: 20px; }
+  .verdict li { padding: 4px 0; line-height: 1.5; }
+  .verdict li.l-block  { color: #ff8a7a; }
+  .verdict li.l-review { color: #f5c97a; }
+  .verdict .empty { color: var(--muted); font-style: italic; }
+  .preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .preset-row button {
+    background: transparent; border: 1px solid var(--border); color: var(--cream);
+    padding: 6px 10px; font-family: 'DM Mono'; font-size: 11px; cursor: pointer;
+  }
+  .preset-row button:hover { border-color: var(--gold); color: var(--gold); }
+  code { font-family: 'DM Mono'; background: var(--void); color: var(--brass); padding: 1px 4px; border: 1px solid var(--border); font-size: 11px; }
+  .install-card pre { background: var(--void); border: 1px solid var(--border); padding: 14px; color: var(--cream); font-family: 'DM Mono'; font-size: 11.5px; overflow-x: auto; line-height: 1.6; }
+  .install-card pre .kw { color: var(--gold); }
+  .install-card pre .str { color: var(--brass); }
+  .install-card pre .cmt { color: var(--muted); font-style: italic; }
+  footer { padding: 24px 32px; border-top: 1px solid var(--border); font-family: 'DM Mono'; font-size: 11px; color: var(--muted); text-align: center; letter-spacing: 0.08em; }
+  footer a { color: var(--brass); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>◊ <em>fall-vetter</em> · guild signup gate</h1>
+  <div class="meta">R2 ┃ validate · prime 347 · v1.0 · sovereign</div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Try a signup</h2>
+    <div class="preset-row">
+      <button data-preset="clean">clean</button>
+      <button data-preset="windup">wind-up</button>
+      <button data-preset="profanity">profanity</button>
+      <button data-preset="disposable">disposable</button>
+      <button data-preset="noid">no identity</button>
+      <button data-preset="github">github-only</button>
+      <button data-preset="mash">keyboard mash</button>
+      <button data-preset="caps">all caps</button>
+      <button data-preset="clear">clear</button>
+    </div>
+    <div class="field"><label>Your name</label><input id="vName" placeholder="e.g. Simon Gant"></div>
+    <div class="field"><label>Email</label><input id="vEmail" type="email" placeholder="you@example.com"></div>
+    <div class="field"><label>LinkedIn URL (preferred)</label><input id="vLinkedIn" type="url" placeholder="https://linkedin.com/in/your-handle"></div>
+    <div class="field"><label>GitHub URL (fallback)</label><input id="vGithub" type="url" placeholder="https://github.com/your-handle"></div>
+    <div class="field"><label>Tool URL (fallback)</label><input id="vTool" type="url" placeholder="https://your-tool.github.io/"></div>
+    <div class="field"><label>What you build / why join</label><textarea id="vMessage" rows="3" placeholder="One line about what you build and why you want in."></textarea></div>
+    <button class="btn" id="vetBtn">Vet this signup ▸</button>
+    <button class="btn ghost" id="resetBtn" style="margin-left:8px">Reset</button>
+
+    <div class="verdict" id="verdict" style="display:none">
+      <div class="top">
+        <span class="badge" id="vBadge">—</span>
+        <span class="score" id="vScore">—</span>
+      </div>
+      <ul id="vReasons"></ul>
+      <details style="margin-top:14px"><summary style="cursor:pointer;color:var(--muted);font-size:11px;letter-spacing:0.1em;text-transform:uppercase">audit record</summary>
+        <pre id="vAudit" style="background:var(--void);border:1px solid var(--border);padding:10px;margin-top:8px;font-family:'DM Mono';font-size:10.5px;color:var(--brass);white-space:pre-wrap"></pre>
+      </details>
+    </div>
+  </section>
+
+  <section class="card install-card">
+    <h2>Drop-in install (for ACG / any signup form)</h2>
+    <p style="font-family:'DM Mono';font-size:12.5px;color:var(--cream);line-height:1.65">Add two lines to your existing signup form. No build step. No backend. Runs entirely client-side.</p>
+
+    <pre><span class="cmt">&lt;!-- 1. Load the module --&gt;</span>
+&lt;<span class="kw">script</span> src=<span class="str">"https://sjgant80-hub.github.io/fall-vetter/fall-vetter.js"</span>&gt;&lt;/<span class="kw">script</span>&gt;
+
+<span class="cmt">&lt;!-- 2. Wire it to your form (one line) --&gt;</span>
+&lt;<span class="kw">script</span>&gt;
+  FallVetter.<span class="kw">attach</span>({
+    button: document.<span class="kw">getElementById</span>(<span class="str">'guildSubmit'</span>),
+    onAllow:  (v) =&gt; submitMyForm(v),
+    onReview: (v) =&gt; flagForHumanReview(v),
+    onBlock:  (v) =&gt; showError(v.reasons)
+  });
+&lt;/<span class="kw">script</span>&gt;</pre>
+
+    <h2 style="margin-top:24px">Or call directly</h2>
+    <pre><span class="kw">const</span> result = FallVetter.<span class="kw">vet</span>({
+  name:     <span class="str">"Simon Gant"</span>,
+  email:    <span class="str">"sjgant80@gmail.com"</span>,
+  linkedin: <span class="str">"https://linkedin.com/in/simon-gant"</span>,
+  github:   <span class="str">"https://github.com/sjgant80"</span>,
+  message:  <span class="str">"I build sovereign software."</span>
+});
+<span class="cmt">// → { score: 100, decision: 'allow', reasons: [], audit: {...} }</span></pre>
+
+    <h2 style="margin-top:24px">What it checks</h2>
+    <ul style="font-family:'DM Mono';font-size:12px;line-height:1.85;color:var(--cream);padding-left:20px">
+      <li><strong style="color:var(--gold)">name</strong> · length, letters present, no URLs, wind-up patterns, profanity, keyboard mash, all-caps</li>
+      <li><strong style="color:var(--gold)">email</strong> · syntax, disposable domains, role accounts, profanity/wind-up in local part, numeric throwaways</li>
+      <li><strong style="color:var(--gold)">linkedin</strong> · URL format + <code>/in/</code> path · soft penalty if absent</li>
+      <li><strong style="color:var(--gold)">social fallback</strong> · GitHub / X / Substack / Medium / personal domain accepted in lieu of LinkedIn</li>
+      <li><strong style="color:var(--gold)">identity floor</strong> · at least ONE social link required — pure email signups are blocked</li>
+      <li><strong style="color:var(--gold)">message body</strong> · profanity, hacker bait, sarcasm signals, excessive caps/exclamation</li>
+      <li><strong style="color:var(--gold)">coherence</strong> · soft check that name and email local overlap</li>
+    </ul>
+
+    <h2 style="margin-top:24px">Decision matrix</h2>
+    <ul style="font-family:'DM Mono';font-size:12px;line-height:1.85;color:var(--cream);padding-left:20px">
+      <li><span class="badge allow" style="font-family:'Syne';font-size:9px;padding:2px 6px">allow</span> &nbsp; score ≥ 70 and no block-level findings → submit straight through</li>
+      <li><span class="badge review" style="font-family:'Syne';font-size:9px;padding:2px 6px">review</span> &nbsp; score 40-69 → human reviews the borderline signal</li>
+      <li><span class="badge block" style="font-family:'Syne';font-size:9px;padding:2px 6px">block</span> &nbsp; score &lt; 40 or any block-level finding → polite rejection</li>
+    </ul>
+
+    <p style="margin-top:18px;font-size:11px;color:var(--muted);font-family:'DM Mono';letter-spacing:0.04em">Audit results broadcast on <code>fall-signal</code> (kind <code>fall_vetter_result</code>) for estate-wide review queues. No PII stored — just an 8-char hash of name+email.</p>
+  </section>
+</main>
+
+<footer>
+  ◊ fall-vetter · prime 347 · MIT · part of the AIN estate · <a href="https://github.com/sjgant80-hub/fall-vetter">source</a>
+</footer>
+
+<script src="./fall-vetter.js"></script>
+<script>
+  const presets = {
+    clean:      { name: 'Simon Gant', email: 'sjgant80@gmail.com', linkedin: 'https://linkedin.com/in/simon-gant', github: 'https://github.com/sjgant80', tool: '', message: 'I build sovereign software. Single HTML files that run from file://. Want in.' },
+    windup:     { name: 'Mike Hunt', email: 'mike.hunt@gmail.com', linkedin: 'https://linkedin.com/in/mhunt', github: '', tool: '', message: 'Hey just trying this out.' },
+    profanity:  { name: 'Some Guy', email: 'fuckface@gmail.com', linkedin: '', github: 'https://github.com/sguy', tool: '', message: 'Yo what the fuck is this even' },
+    disposable: { name: 'Anon User', email: 'real@mailinator.com', linkedin: 'https://linkedin.com/in/anon', github: '', tool: '', message: 'Quick question about the guild.' },
+    noid:       { name: 'Real Person', email: 'real@gmail.com', linkedin: '', github: '', tool: '', message: 'Sign me up.' },
+    github:     { name: 'Dev Builder', email: 'dev@gmail.com', linkedin: '', github: 'https://github.com/devbuilder', tool: 'https://devbuilder.github.io/sometool/', message: 'I ship sovereign tools weekly. Here is mine.' },
+    mash:       { name: 'aaaaaaaaa', email: 'qwerty@gmail.com', linkedin: '', github: 'https://github.com/x', tool: '', message: 'asdf asdf asdf' },
+    caps:       { name: 'SIMON GANT', email: 'simon@gmail.com', linkedin: 'https://linkedin.com/in/simon-gant', github: '', tool: '', message: 'JOIN ME NOW!!!!! THIS IS THE GUILD!!!!' },
+    clear:      { name: '', email: '', linkedin: '', github: '', tool: '', message: '' },
+  };
+  const fieldIds = { name: 'vName', email: 'vEmail', linkedin: 'vLinkedIn', github: 'vGithub', tool: 'vTool', message: 'vMessage' };
+  function loadPreset(name) {
+    const p = presets[name]; if (!p) return;
+    for (const k in fieldIds) document.getElementById(fieldIds[k]).value = p[k] || '';
+  }
+  document.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.addEventListener('click', () => loadPreset(btn.getAttribute('data-preset')));
+  });
+
+  function readInput() {
+    const o = {};
+    for (const k in fieldIds) o[k] = document.getElementById(fieldIds[k]).value;
+    return o;
+  }
+  function render(result) {
+    const v = document.getElementById('verdict');
+    v.style.display = 'block';
+    const badge = document.getElementById('vBadge');
+    badge.className = 'badge ' + result.decision;
+    badge.textContent = result.decision;
+    document.getElementById('vScore').textContent = result.score + ' / 100';
+    const ul = document.getElementById('vReasons');
+    ul.innerHTML = '';
+    if (!result.reasons.length) {
+      const li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = 'No issues detected.';
+      ul.appendChild(li);
+    } else {
+      for (const r of result.reasons) {
+        const li = document.createElement('li');
+        li.className = 'l-' + r.level;
+        li.textContent = '[' + r.field + '] ' + r.msg;
+        ul.appendChild(li);
+      }
+    }
+    document.getElementById('vAudit').textContent = JSON.stringify(result.audit, null, 2);
+  }
+  document.getElementById('vetBtn').addEventListener('click', () => {
+    const result = FallVetter.vet(readInput());
+    render(result);
+  });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    loadPreset('clear');
+    document.getElementById('verdict').style.display = 'none';
+  });
+
+  // Load clean preset by default
+  loadPreset('clean');
+</script>
+</body>
+</html>
