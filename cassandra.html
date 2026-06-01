@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>◊ Cassandra · fall-vetter v2.0 · psychological reading</title>
+<meta name="description" content="The 4-lens psychological reading surface. Jung archetype + Freud defenses + Sales 101 stance + swear ladder · synthesised into a prophetic verdict.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Mono:wght@400;500&family=Libre+Baskerville:ital@0;1&family=Cormorant+Garamond:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ox: #8b1a1a;
+  --brass: #b8974a;
+  --gold: #d4a853;
+  --cream: #c4bfb2;
+  --void: #0b0a0f;
+  --surface: #14131a;
+  --surface-2: #1a1822;
+  --border: #2a2730;
+  --muted: #6f6b78;
+  --green: #4a8a4a;
+  --amber: #c87e3a;
+  --red: #c8371a;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--void); color: var(--cream); font-family: 'Syne', system-ui, sans-serif; min-height: 100vh; }
+body {
+  background-image:
+    radial-gradient(at 15% 0%,  rgba(139,26,26,0.10) 0%, transparent 45%),
+    radial-gradient(at 85% 100%, rgba(184,151,74,0.08) 0%, transparent 40%),
+    radial-gradient(at 50% 50%, rgba(212,168,83,0.03) 0%, transparent 70%);
+}
+header { padding: 30px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+header h1 { font-family: 'Libre Baskerville', serif; font-size: 26px; margin: 0; letter-spacing: 0.02em; color: var(--cream); }
+header h1 em { color: var(--gold); font-style: normal; }
+header h1 .glyph { color: var(--gold); margin-right: 6px; }
+header .meta { font-family: 'DM Mono'; font-size: 11px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+header .meta a { color: var(--brass); text-decoration: none; }
+header .meta a:hover { color: var(--gold); }
+
+main { max-width: 1340px; margin: 0 auto; padding: 28px 32px 80px; }
+.subhead { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 19px; color: var(--muted); max-width: 760px; margin: 0 0 28px; line-height: 1.55; }
+.subhead em { color: var(--brass); font-style: italic; }
+
+.layout { display: grid; grid-template-columns: 440px 1fr; gap: 28px; }
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+.card { background: var(--surface); border: 1px solid var(--border); padding: 24px; }
+.card h2 { font-family: 'Libre Baskerville', serif; font-size: 17px; margin: 0 0 16px; color: var(--cream); border-bottom: 1px solid var(--border); padding-bottom: 10px; letter-spacing: 0.01em; }
+.card h2 .small { font-family: 'DM Mono'; font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-left: 8px; }
+
+.field { margin-bottom: 12px; }
+.field label { font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 5px; }
+.field input, .field textarea {
+  width: 100%; background: var(--void); border: 1px solid var(--border); color: var(--cream);
+  padding: 10px 12px; font-family: 'DM Mono'; font-size: 13px;
+}
+.field textarea { min-height: 130px; resize: vertical; line-height: 1.5; }
+.field input:focus, .field textarea:focus { outline: 1px solid var(--gold); outline-offset: -1px; }
+
+.btn {
+  background: var(--gold); color: var(--void); border: none; padding: 13px 28px;
+  font-family: 'Syne'; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  font-size: 12px; cursor: pointer; transition: background 0.15s;
+  width: 100%; margin-top: 8px;
+}
+.btn:hover { background: var(--brass); }
+.btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--cream); width: auto; padding: 8px 14px; font-size: 11px; margin-top: 0; }
+.btn.ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ─── PROPHET'S SCROLL ─── */
+.scroll { position: relative; }
+.scroll .empty {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  color: var(--muted); font-size: 17px; text-align: center; padding: 60px 20px;
+  border: 1px dashed var(--border);
+}
+
+.archetype-banner {
+  background: linear-gradient(135deg, rgba(139,26,26,0.12) 0%, rgba(184,151,74,0.10) 100%);
+  border: 1px solid var(--gold);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.archetype-banner::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--gold);
+}
+.archetype-banner .tag {
+  font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+}
+.archetype-banner .name {
+  font-family: 'Libre Baskerville', serif; font-size: 32px;
+  color: var(--cream); margin: 0 0 8px; letter-spacing: 0.01em;
+}
+.archetype-banner .strength-bar {
+  height: 6px; background: var(--void); border: 1px solid var(--border);
+  margin-top: 12px; position: relative; overflow: hidden;
+}
+.archetype-banner .strength-bar .fill {
+  height: 100%; background: var(--gold);
+  transition: width 0.6s ease;
+}
+.archetype-banner .strength-label {
+  font-family: 'DM Mono'; font-size: 10px; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px; display: flex; justify-content: space-between;
+}
+.archetype-banner .runners {
+  font-family: 'DM Mono'; font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.6;
+}
+.archetype-banner .runners b { color: var(--brass); font-weight: 500; }
+
+.reading {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 19px; color: var(--cream); line-height: 1.6;
+  padding: 20px 24px; background: var(--void);
+  border-left: 2px solid var(--gold); margin-bottom: 16px;
+}
+.reading::before { content: '◊ '; color: var(--gold); font-family: 'Libre Baskerville'; font-style: normal; }
+.reading .confidence {
+  display: block; font-family: 'DM Mono'; font-size: 10px;
+  color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase;
+  margin-top: 10px; font-style: normal;
+}
+
+.decision-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.badge { font-family: 'Syne'; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; font-size: 11px; padding: 8px 14px; }
+.badge.allow  { background: var(--green); color: white; }
+.badge.review { background: var(--amber); color: white; }
+.badge.block  { background: var(--red);   color: white; }
+.score-display { font-family: 'Libre Baskerville', serif; font-size: 32px; color: var(--gold); }
+.next-action { font-family: 'DM Mono'; font-size: 11px; color: var(--brass); letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 12px; border: 1px solid var(--brass); }
+
+/* ─── LENS PANELS ─── */
+.lens {
+  background: var(--surface-2); border: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.lens summary {
+  font-family: 'Syne'; font-weight: 700; font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 14px 18px; cursor: pointer; color: var(--cream);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  list-style: none;
+}
+.lens summary::-webkit-details-marker { display: none; }
+.lens summary::before { content: '▸ '; color: var(--gold); transition: transform 0.15s; display: inline-block; }
+.lens[open] summary::before { transform: rotate(90deg); }
+.lens summary .pill { font-family: 'DM Mono'; font-size: 10px; padding: 3px 8px; border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.08em; }
+.lens summary .pill.hot { color: var(--gold); border-color: var(--gold); }
+.lens summary .pill.warn { color: var(--amber); border-color: var(--amber); }
+.lens summary .pill.bad { color: var(--red); border-color: var(--red); }
+.lens .body {
+  padding: 4px 18px 18px; font-family: 'DM Mono'; font-size: 12px;
+  color: var(--cream); line-height: 1.7;
+}
+.lens .body .quote { color: var(--brass); }
+.lens .body .lbl { color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+.lens .body table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }
+.lens .body td { padding: 4px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.lens .body td.k { color: var(--muted); width: 40%; letter-spacing: 0.06em; text-transform: uppercase; font-size: 10px; }
+.lens .body code { font-family: 'DM Mono'; background: var(--void); color: var(--brass); padding: 1px 4px; border: 1px solid var(--border); font-size: 11px; }
+.lens .body ul { margin: 4px 0 4px 18px; padding: 0; }
+.lens .body li { padding: 2px 0; }
+
+/* ─── PRESETS ─── */
+.presets {
+  margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border);
+}
+.presets-label { font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.preset-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+.preset-row button {
+  background: transparent; border: 1px solid var(--border); color: var(--cream);
+  padding: 9px 10px; font-family: 'DM Mono'; font-size: 11px; cursor: pointer;
+  letter-spacing: 0.06em; text-align: left;
+}
+.preset-row button:hover { border-color: var(--gold); color: var(--gold); }
+.preset-row button .pn { color: var(--muted); font-size: 9px; display: block; margin-top: 2px; }
+
+/* ─── ALEX EXTENSION FOOTER ─── */
+.alex-ext {
+  margin-top: 28px; padding: 22px; background: var(--surface);
+  border: 1px solid var(--border); border-left: 2px solid var(--brass);
+}
+.alex-ext h3 { font-family: 'Libre Baskerville', serif; font-size: 16px; margin: 0 0 8px; color: var(--brass); }
+.alex-ext .alex-sub { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--muted); margin-bottom: 16px; font-size: 14px; }
+.alex-ext label { font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: block; margin: 10px 0 4px; }
+.alex-ext textarea {
+  width: 100%; background: var(--void); border: 1px solid var(--border);
+  color: var(--cream); padding: 8px 10px; font-family: 'DM Mono';
+  font-size: 12px; min-height: 38px; resize: vertical;
+}
+.alex-ext .alex-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 800px) { .alex-ext .alex-grid { grid-template-columns: 1fr; } }
+.alex-ext .alex-actions { display: flex; gap: 8px; margin-top: 14px; }
+.alex-ext .note {
+  font-family: 'DM Mono'; font-size: 11px; color: var(--muted); line-height: 1.6;
+  background: var(--void); padding: 10px 12px; border: 1px solid var(--border); margin-top: 12px;
+}
+
+footer { padding: 28px 32px; border-top: 1px solid var(--border); font-family: 'DM Mono'; font-size: 11px; color: var(--muted); text-align: center; letter-spacing: 0.08em; }
+footer a { color: var(--brass); text-decoration: none; }
+footer a:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="glyph">◊</span>Cassandra <em>· the psychological reading</em></h1>
+  <div class="meta">
+    fall-vetter <a href="./index.html">v1 gate</a> · v2.0 · prime 401 ·
+    <a href="https://github.com/sjgant80-hub/fall-vetter" target="_blank">github</a>
+  </div>
+</header>
+
+<main>
+  <p class="subhead">Four lenses run in parallel · the v1 gate, Jung archetype, Freud defenses, Sales-101 stance, and Alex's swear ladder. Then the synthesis: a 1-3 sentence verdict, a decision floor, a recommended next move. <em>Prophetic, but cited.</em></p>
+
+  <div class="layout">
+    <!-- INPUT -->
+    <div>
+      <div class="card">
+        <h2>Signup <span class="small">six fields + body</span></h2>
+        <div class="field"><label>Name</label><input id="fName" type="text" placeholder="First Last"></div>
+        <div class="field"><label>Email</label><input id="fEmail" type="email" placeholder="someone@somewhere.com"></div>
+        <div class="field"><label>LinkedIn URL</label><input id="fLinkedIn" type="url" placeholder="https://linkedin.com/in/..."></div>
+        <div class="field"><label>GitHub URL</label><input id="fGithub" type="url" placeholder="https://github.com/..."></div>
+        <div class="field"><label>Tool / portfolio URL</label><input id="fTool" type="url" placeholder="https://yourdomain.com/..."></div>
+        <div class="field"><label>Message body (the actual ask)</label>
+          <textarea id="fBody" placeholder="Paste the full body of their message · the deeper the read the more it has to read."></textarea>
+        </div>
+        <button class="btn" id="readBtn">◊ READ</button>
+
+        <div class="presets">
+          <div class="presets-label">Eight presets · click to load + read</div>
+          <div class="preset-row" id="presetRow"></div>
+        </div>
+      </div>
+
+      <div class="alex-ext">
+        <h3>Extension point · Alex's swear-word ladder</h3>
+        <div class="alex-sub">Three tiers · seed empty · push runtime additions and re-read. Persists in this tab only.</div>
+        <div class="alex-grid">
+          <div>
+            <label>Tier 1 · mild (−10/hit)</label>
+            <textarea id="ladderT1" placeholder="comma or newline separated · e.g. damn, crap"></textarea>
+          </div>
+          <div>
+            <label>Tier 2 · medium (−25/hit)</label>
+            <textarea id="ladderT2" placeholder="e.g. shit, bullshit"></textarea>
+          </div>
+          <div>
+            <label>Tier 3 · severe (auto-block)</label>
+            <textarea id="ladderT3" placeholder="slurs · threats · harassment"></textarea>
+          </div>
+        </div>
+        <div class="alex-actions">
+          <button class="btn ghost" id="ladderApply">Apply ladder + re-read</button>
+          <button class="btn ghost" id="ladderClear">Clear ladder</button>
+        </div>
+        <div class="note">Detection uses <code>leetNorm</code> · so <code>sh1t</code> matches <code>shit</code>. All matching is whole-word against the normalised text. Tier-3 hits force <code>decision = block</code> regardless of other lenses.</div>
+      </div>
+    </div>
+
+    <!-- VERDICT SCROLL -->
+    <div>
+      <div class="card scroll" id="scroll">
+        <h2>The reading <span class="small">prophet's scroll</span></h2>
+        <div id="verdict"><div class="empty">No signup read yet. Load a preset, or fill the form on the left and press READ.</div></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  fall-vetter v2.0 · Cassandra mode · ◊·κ=φ · single-file sovereignty · MIT · <a href="https://sjgant80-hub.github.io/fall-vetter/" target="_blank">live</a>
+</footer>
+
+<script src="./fall-vetter.js"></script>
+<script>
+'use strict';
+
+// ─── 8 presets (good · borderline · troll · competitor · BUILDER_PEER · fan · spam · genuine-trauma)
+const PRESETS = [
+  { key: 'good', label: 'Good', sub: 'specific pain · urgency', input: {
+    name: 'Sarah Chen', email: 'sarah@chenlabs.io',
+    linkedin: 'https://linkedin.com/in/sarahchen',
+    github: 'https://github.com/sarahchen', tool: '',
+    body: "I'm losing about 12 hours a week reconciling 4 dashboards across Notion, Airtable and HubSpot. I run a 6-person ops team and we're spending £600/mo on tools that don't talk to each other. Can you tell me whether your CRM tool handles multi-tenant out of the box? We launch in 3 weeks."
+  }},
+  { key: 'borderline', label: 'Borderline', sub: 'thin signal', input: {
+    name: 'Mike J', email: 'mike@gmail.com', linkedin: '',
+    github: 'https://github.com/mikej', tool: '',
+    body: "Interesting site. Just curious about your stack."
+  }},
+  { key: 'troll', label: 'Troll', sub: 'wind-up name', input: {
+    name: 'Hugh Jass', email: 'lol@mailinator.com', linkedin: '', github: '', tool: '',
+    body: 'lol nice 0day site bro · sql injection time?'
+  }},
+  { key: 'competitor', label: 'Competitor', sub: 'architecture probe', input: {
+    name: 'Alex Patel', email: 'alex@rivalcorp.com',
+    linkedin: 'https://linkedin.com/in/alexp', github: '', tool: '',
+    body: "How do you architect this? What stack and database? Competitive analysis vs our internal benchmark."
+  }},
+  { key: 'peer', label: 'BUILDER_PEER', sub: 'own builds · estate vocab', input: {
+    name: 'Thomas R', email: 'tom@teslasolar.io',
+    linkedin: 'https://linkedin.com/in/thomasr',
+    github: 'https://github.com/teslasolar',
+    tool: 'https://teslasolar.github.io/AudioFabric/cassandra/',
+    body: "I built AudioFabric · the Cassandra agent shipped last month. Big respect for the substrate work · the BroadcastChannel mesh maps neatly to my KQTT bridge. Want to compose? My GS arena estate has 89 tools auto-listening."
+  }},
+  { key: 'fan', label: 'Fan mail', sub: 'congrats · no ask', input: {
+    name: 'Jamie', email: 'jamie@protonmail.com',
+    linkedin: 'https://linkedin.com/in/jamiefan', github: '', tool: '',
+    body: 'Congrats! Amazing work. Great job.'
+  }},
+  { key: 'spam', label: 'Spam', sub: 'mash · disposable', input: {
+    name: 'aaaa', email: 'qwerty@mailinator.com', linkedin: '', github: '', tool: '',
+    body: 'aaaaaaa'
+  }},
+  { key: 'trauma', label: 'Genuine + trauma', sub: 'orphan · displacement', input: {
+    name: 'Priya Sharma', email: 'priya.sharma@kindlabs.org',
+    linkedin: 'https://linkedin.com/in/priyasharma', github: '', tool: '',
+    body: "I'm not angry but the SaaS vendor we used burned us — we lost £4000 of client data when they raised prices overnight and locked us out. The reason I had to leave is because I never want to feel that helpless again. I want to understand how your sovereign approach actually keeps the data on-device. We have 80 clients depending on it."
+  }},
+];
+
+const $ = (id) => document.getElementById(id);
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ── render preset row
+const prRow = $('presetRow');
+PRESETS.forEach(p => {
+  const b = document.createElement('button');
+  b.innerHTML = '<b>' + esc(p.label) + '</b><span class="pn">' + esc(p.sub) + '</span>';
+  b.onclick = () => { loadPreset(p); doRead(); };
+  prRow.appendChild(b);
+});
+
+function loadPreset(p) {
+  $('fName').value     = p.input.name || '';
+  $('fEmail').value    = p.input.email || '';
+  $('fLinkedIn').value = p.input.linkedin || '';
+  $('fGithub').value   = p.input.github || '';
+  $('fTool').value     = p.input.tool || '';
+  $('fBody').value     = p.input.body || '';
+}
+
+function gatherInput() {
+  return {
+    name:     $('fName').value.trim(),
+    email:    $('fEmail').value.trim(),
+    linkedin: $('fLinkedIn').value.trim(),
+    github:   $('fGithub').value.trim(),
+    tool:     $('fTool').value.trim(),
+    message:  $('fBody').value.trim(),
+  };
+}
+
+function doRead() {
+  applyLadderFromUI();
+  const input = gatherInput();
+  const result = window.FallVetter.read(input);
+  renderVerdict(result, input);
+  // Broadcast also done internally by read()
+}
+
+function renderVerdict(r, input) {
+  const v = $('verdict');
+  const j = r.lenses.jung;
+  const f = r.lenses.freud;
+  const s = r.lenses.sales101;
+  const l = r.lenses.ladder;
+  const b = r.lenses.base;
+
+  const runners = (j.runners_up || []).map(x => '<b>' + esc(x.name) + '</b> ' + x.strength).join(' · ') || '<i>none above 0</i>';
+
+  // Lens pill helpers
+  const freudPill = f.detected.length === 0 ? '<span class="pill">clean</span>'
+                  : f.total_severity >= 6   ? '<span class="pill bad">' + f.detected.length + ' detected · sev ' + f.total_severity + '</span>'
+                  : f.total_severity >= 3   ? '<span class="pill warn">' + f.detected.length + ' detected · sev ' + f.total_severity + '</span>'
+                  : '<span class="pill">' + f.detected.length + ' detected · sev ' + f.total_severity + '</span>';
+  const stancePill = s.stance === 'BUYER_SEEKING' ? '<span class="pill hot">' + esc(s.stance) + '</span>'
+                   : s.stance === 'BUILDER_PEER'  ? '<span class="pill hot">' + esc(s.stance) + '</span>'
+                   : s.stance === 'COMPETITOR'    ? '<span class="pill warn">' + esc(s.stance) + '</span>'
+                   : '<span class="pill">' + esc(s.stance) + '</span>';
+  const ladderPill = l.auto_block ? '<span class="pill bad">AUTO-BLOCK</span>'
+                   : l.score_impact < 0 ? '<span class="pill warn">' + l.score_impact + '</span>'
+                   : '<span class="pill">no hits</span>';
+  const basePill = b.decision === 'block' ? '<span class="pill bad">block</span>'
+                 : b.decision === 'review' ? '<span class="pill warn">review</span>'
+                 : '<span class="pill hot">allow ' + b.score + '</span>';
+
+  v.innerHTML =
+    '<div class="archetype-banner">' +
+      '<div class="tag">JUNG ARCHETYPE · dominant</div>' +
+      '<div class="name">' + esc(r.archetype) + '</div>' +
+      '<div class="strength-bar"><div class="fill" style="width:' + Math.max(2, j.strength) + '%"></div></div>' +
+      '<div class="strength-label"><span>strength</span><span>' + j.strength + ' / 100</span></div>' +
+      '<div class="runners"><b>runners-up:</b> ' + runners + '</div>' +
+    '</div>' +
+
+    '<div class="reading">' + esc(r.reading.summary) + '<span class="confidence">confidence: ' + r.reading.confidence + ' · ' + r.lenses.base.score + ' base · ' + r.score + ' synth</span></div>' +
+
+    '<div class="decision-row">' +
+      '<span class="badge ' + r.decision + '">' + r.decision.toUpperCase() + '</span>' +
+      '<span class="score-display">' + r.score + '</span>' +
+      '<span class="next-action">next · ' + esc(s.recommended_next) + '</span>' +
+    '</div>' +
+
+    // ─── Lens panels
+    '<details class="lens" open>' +
+      '<summary>Lens 1 · Jung archetype ' + (j.strength ? '<span class="pill hot">' + esc(j.archetype) + ' ' + j.strength + '</span>' : '<span class="pill">no signal</span>') + '</summary>' +
+      '<div class="body">' +
+        '<div class="lbl">triggered signals</div>' +
+        (j.signals.length ? '<ul>' + j.signals.map(x => '<li><span class="quote">"' + esc(x) + '"</span></li>').join('') + '</ul>' : '<i>none</i>') +
+        '<div class="lbl" style="margin-top:10px">runners-up</div>' +
+        (j.runners_up.length ? '<ul>' + j.runners_up.map(x => '<li>' + esc(x.name) + ' · ' + x.strength + '</li>').join('') + '</ul>' : '<i>none above 0</i>') +
+      '</div>' +
+    '</details>' +
+
+    '<details class="lens">' +
+      '<summary>Lens 2 · Freud defense mechanisms ' + freudPill + '</summary>' +
+      '<div class="body">' +
+        '<div class="lbl">detected mechanisms</div>' +
+        (f.detected.length ? '<table>' + f.detected.map(d => '<tr><td class="k">' + esc(d.mechanism) + ' · sev ' + d.severity + '</td><td><span class="quote">"' + esc(d.evidence) + '"</span></td></tr>').join('') + '</table>' : '<i>none detected</i>') +
+        '<div class="lbl" style="margin-top:10px">healthy signals</div>' +
+        '<div>' + f.healthy_signal_count + ' direct/concrete signals · dominant: <code>' + esc(f.dominant || 'none') + '</code></div>' +
+      '</div>' +
+    '</details>' +
+
+    '<details class="lens">' +
+      '<summary>Lens 3 · Sales 101 stance ' + stancePill + ' <span class="pill">conf ' + s.confidence + '</span></summary>' +
+      '<div class="body">' +
+        '<div class="lbl">triggered signals</div>' +
+        (s.signals.length ? '<ul>' + s.signals.map(x => '<li><code>' + esc(x) + '</code></li>').join('') + '</ul>' : '<i>none</i>') +
+        '<div class="lbl" style="margin-top:10px">recommended next</div>' +
+        '<div><code>' + esc(s.recommended_next) + '</code></div>' +
+      '</div>' +
+    '</details>' +
+
+    '<details class="lens">' +
+      '<summary>Lens 4 · Alex\'s swear ladder ' + ladderPill + '</summary>' +
+      '<div class="body">' +
+        '<table>' +
+          '<tr><td class="k">tier 1 hits</td><td>' + l.tier1_hits + '</td></tr>' +
+          '<tr><td class="k">tier 2 hits</td><td>' + l.tier2_hits + '</td></tr>' +
+          '<tr><td class="k">tier 3 hits</td><td>' + l.tier3_hits + (l.auto_block ? ' <span class="pill bad">AUTO-BLOCK</span>' : '') + '</td></tr>' +
+          '<tr><td class="k">samples</td><td>' + (l.samples.length ? l.samples.map(x => '<code>' + esc(x) + '</code>').join(' ') : '<i>none</i>') + '</td></tr>' +
+          '<tr><td class="k">score impact</td><td>' + l.score_impact + '</td></tr>' +
+        '</table>' +
+      '</div>' +
+    '</details>' +
+
+    '<details class="lens">' +
+      '<summary>Lens 0 · v1 base gate ' + basePill + '</summary>' +
+      '<div class="body">' +
+        '<div class="lbl">v1 score · ' + b.score + ' · decision · ' + b.decision + '</div>' +
+        (b.reasons.length ? '<ul>' + b.reasons.map(rr => '<li>[' + esc(rr.field) + ' · ' + esc(rr.level) + '] ' + esc(rr.msg) + '</li>').join('') + '</ul>' : '<i>no reasons fired</i>') +
+      '</div>' +
+    '</details>';
+}
+
+// ── ladder UI
+function parseLadderField(v) {
+  return v.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
+}
+function applyLadderFromUI() {
+  const L = window.FallVetter.lists.SWEAR_LADDER;
+  L.tier1_mild.length = 0;
+  L.tier2_medium.length = 0;
+  L.tier3_severe.length = 0;
+  for (const w of parseLadderField($('ladderT1').value)) L.tier1_mild.push(w);
+  for (const w of parseLadderField($('ladderT2').value)) L.tier2_medium.push(w);
+  for (const w of parseLadderField($('ladderT3').value)) L.tier3_severe.push(w);
+}
+$('ladderApply').onclick = () => doRead();
+$('ladderClear').onclick = () => {
+  $('ladderT1').value = ''; $('ladderT2').value = ''; $('ladderT3').value = '';
+  applyLadderFromUI();
+  // re-read if there's content
+  if ($('fBody').value.trim() || $('fName').value.trim()) doRead();
+};
+
+// ── wire READ button
+$('readBtn').onclick = doRead;
+
+// ── default: load the BUILDER_PEER preset so the surface isn't empty
+loadPreset(PRESETS.find(p => p.key === 'peer'));
+doRead();
+</script>
+</body>
+</html>

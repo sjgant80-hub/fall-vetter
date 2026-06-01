@@ -1,24 +1,29 @@
 // ═══════════════════════════════════════════════════════════════════
-//  fall-vetter · v1.0 · guild signup gate · R2 ring · ┃ validate
-//  prime 347 · sovereign single-file · MIT
+//  fall-vetter · v2.0 "Cassandra mode" · guild signup gate · R2 ring
+//  prime 347 (v1 vet) + prime 401 (v2 read) · sovereign single-file · MIT
 //
-//  Drop-in pre-block for any signup form. Validates:
-//    · name (length / pattern / wind-up / leet / repeated chars)
-//    · email (syntax / disposable / role-account / domain)
-//    · LinkedIn URL (format + handle sanity)
-//    · social fallback (GitHub, X, personal site, Substack)
-//    · message body (sarcasm/swearing/hack-bait signal)
+//  v1 binary gate (always available · fast path):
+//    FallVetter.vet({name, email, linkedin, github, tool, message})
+//      → { score, decision: 'allow'|'review'|'block', reasons[], audit }
 //
-//  Returns: { score, decision: 'allow'|'review'|'block', reasons[], audit }
+//  v2 Cassandra · the deeper psychological read (4 lenses + synthesis):
+//    FallVetter.read({...same input + body})
+//      → { score, decision, archetype, reading{summary,confidence},
+//          lenses: { base, jung, freud, sales101, ladder }, audit }
+//
+//  Lens 1 · Jung archetype (12 classics · transparent keyword scorer)
+//  Lens 2 · Freud defense mechanisms (7 patterns · severity 0-3)
+//  Lens 3 · Sales 101 buyer-stance read (BUYER/TIRE-KICKER/COMPETITOR/PEER/NOISE)
+//  Lens 4 · Alex's swear-word ladder (3 tiers · extension point · empty seed)
+//
 //  No network calls by default. Pure function. Offline-first.
-//  Optional async helpers for future LinkedIn fetch verification.
+//  Audit broadcast on BroadcastChannel('fall-signal') for estate listeners.
 //
 //  Usage:
 //    <script src="https://sjgant80-hub.github.io/fall-vetter/fall-vetter.js"></script>
-//    const v = window.FallVetter.vet({ name, email, linkedin, github, message });
-//    if (v.decision === 'block') showError(v.reasons);
-//    else if (v.decision === 'review') flagForHumanReview(v);
-//    else submitForm();
+//    const v = FallVetter.vet({...});               // v1 fast gate
+//    const r = FallVetter.read({...});              // v2 deep read
+//    const r = FallVetter.vet({...}, {mode:'cassandra'});  // alias for read
 // ═══════════════════════════════════════════════════════════════════
 
 (function(global){
@@ -391,7 +396,7 @@
 
     // Broadcast to fall-signal for estate-wide audit (optional)
     try {
-      if (typeof BroadcastChannel !== 'undefined') {
+      if (typeof BroadcastChannel !== 'undefined' && !(opts && opts._skipBroadcast)) {
         const ch = new BroadcastChannel('fall-signal');
         ch.postMessage({ kind: 'fall_vetter_result', payload: audit });
         ch.close();
@@ -412,12 +417,337 @@
     return h.toString(16).padStart(8, '0');
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  CASSANDRA MODE · v2.0 · the 4-lens psychological read
+  //  prime 401 · the prophetic synthesis on top of the v1 gate
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── Lens 1 · Jung archetype detection ──────────────────────────
+  // 12 classic archetypes · transparent keyword + structure scorer.
+  // Each archetype has weighted phrase signals · the dominant wins.
+  // Documented openly so Alex can tune the patterns.
+  const JUNG_ARCHETYPES = {
+    Innocent:   { keywords: ['hope this is ok','just trying','naive','simple','first time','please','sorry to bother','newbie','beginner','help me'], weight_per: 6 },
+    Orphan:     { keywords: ['been burned','let down','nobody','alone','rejected','ignored','no one listens','tired of','fed up','again'], weight_per: 7 },
+    Hero:       { keywords: ['fight for','win','crush','dominate','leverage','beat','conquer','smash','take on','battle','arena'], weight_per: 7 },
+    Caregiver:  { keywords: ['help my team','for my clients','for my people','serve','give back','support','protect','nurture','look after'], weight_per: 7 },
+    Explorer:   { keywords: ['discover','exploring','curious','wandering','find out','try','journey','new territory','frontier','what if'], weight_per: 6 },
+    Rebel:      { keywords: ['break','disrupt','f the system','tear down','anti','against','revolt','overthrow','burn it down','no rules'], weight_per: 8 },
+    Lover:      { keywords: ['love','passion','beautiful','adore','intimate','connect','relationship','bond','devoted','beloved'], weight_per: 6 },
+    Creator:    { keywords: ['build','make','craft','design','imagine','create','original','my own','from scratch','artisan'], weight_per: 6 },
+    Jester:     { keywords: ['lol','lmao','haha','jk','kidding','joking','funny','meme','😂','🤣','😅','obvs','tbh','ngl'], weight_per: 8 },
+    Sage:       { keywords: ['understand','learn from','research','study','wisdom','truth','analyse','analyze','reflect','knowledge','insight','principle'], weight_per: 7 },
+    Magician:   { keywords: ['transform','catalyse','catalyze','manifest','envision','alchemy','vision','consciousness','emergent','synthesis','transmute'], weight_per: 8 },
+    Ruler:      { keywords: ['my company','my team','my estate','i run','i own','i lead','i command','my domain','my org','enterprise','authority'], weight_per: 7 },
+  };
+
+  function lensJung(message, name) {
+    const text = lower((message || '') + ' ' + (name || ''));
+    const scores = {};
+    const signals = {};
+    for (const [arch, def] of Object.entries(JUNG_ARCHETYPES)) {
+      scores[arch] = 0;
+      signals[arch] = [];
+      for (const kw of def.keywords) {
+        if (text.includes(kw)) {
+          scores[arch] += def.weight_per;
+          signals[arch].push(kw);
+        }
+      }
+    }
+    // Structural signals
+    const emojiCount = (message || '').match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu) || [];
+    if (emojiCount.length >= 2) { scores.Jester += emojiCount.length * 4; signals.Jester.push('emoji-density:'+emojiCount.length); }
+    const qMarks = ((message||'').match(/\?/g)||[]).length;
+    if (qMarks >= 3) { scores.Explorer += qMarks * 3; signals.Explorer.push('question-density:'+qMarks); }
+    const exclamation = ((message||'').match(/!/g)||[]).length;
+    if (exclamation >= 3) { scores.Hero += exclamation * 2; signals.Hero.push('exclamation-density:'+exclamation); }
+    // Convert to 0-100 strengths (cap)
+    for (const k of Object.keys(scores)) scores[k] = Math.min(100, scores[k]);
+    // Rank
+    const ranked = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    const top = ranked[0];
+    const archetype = top && top[1] > 0 ? top[0] : 'Seeker'; // Seeker = the empty default
+    const strength = top ? top[1] : 0;
+    const runners = ranked.slice(1, 4).filter(([,s])=>s>0).map(([name,s])=>({name, strength: s}));
+    const triggered = signals[archetype] || [];
+    return { archetype, strength, runners_up: runners, signals: triggered };
+  }
+
+  // ─── Lens 2 · Freud defense mechanisms ──────────────────────────
+  // 7 classic patterns · each with regex/phrase signature + severity rule.
+  function lensFreud(message) {
+    const m = (message || '').toString();
+    const lo = lower(m);
+    const detected = [];
+    function add(mech, evidence, severity) { detected.push({ mechanism: mech, evidence, severity }); }
+
+    // Projection: "everyone always" / "people are all" / "they all..."
+    if (/\b(everyone|nobody|everybody)\s+(always|never)\b/i.test(m)) add('Projection', m.match(/\b(everyone|nobody|everybody)\s+(always|never)[^.!?]*/i)[0], 2);
+    if (/\bpeople\s+are\s+all\b/i.test(m)) add('Projection', 'people are all…', 2);
+
+    // Displacement: "I'm not angry but X is..." / "not about Y but Z"
+    if (/\bi'?m not (angry|upset|mad)\b.*\bbut\b/i.test(m)) add('Displacement', m.match(/\bi'?m not[^.!?]*but[^.!?]*/i)[0].slice(0,120), 2);
+    if (/\bnot about\b.*\bbut\b/i.test(lo)) add('Displacement', 'not about X but Y construction', 1);
+
+    // Sublimation: "I channel my X into Y" (often healthy · low severity)
+    if (/\bchannel(?:s|ed)? my\b/i.test(m)) add('Sublimation', m.match(/\bchannel[^.!?]*/i)[0].slice(0,100), 1);
+    if (/\bpour(?:ed)? (?:my|all) (?:rage|anger|pain) into\b/i.test(m)) add('Sublimation', 'pour X into Y construction', 1);
+
+    // Rationalization: "the reason I X is because" / "I had to" / "I only X because"
+    if (/\bthe reason (?:i|we) [a-z]+ is because\b/i.test(m)) add('Rationalization', m.match(/\bthe reason[^.!?]*/i)[0].slice(0,120), 2);
+    if (/\bi (?:only|just) did [a-z]+ because\b/i.test(m)) add('Rationalization', 'I only did X because…', 1);
+    if (/\bi had to\b/i.test(m) && /\bbecause\b/i.test(m)) add('Rationalization', 'I had to…because…', 1);
+
+    // Denial: "I never" / "I don't have a problem with" / "it's fine, really"
+    if (/\bi never\b/i.test(m)) add('Denial', 'I never…', 1);
+    if (/\bi don'?t have a problem (?:with|about)\b/i.test(m)) add('Denial', "I don't have a problem with…", 2);
+    if (/\bit'?s fine,? really\b/i.test(m)) add('Denial', "it's fine, really", 2);
+
+    // Reaction Formation: extreme love/hate of all/everything
+    if (/\bi (?:love|adore) everything (?:about )?\b/i.test(m)) add('ReactionFormation', 'I love everything about…', 2);
+    if (/\bi (?:hate|loathe|despise) everything (?:about )?\b/i.test(m)) add('ReactionFormation', 'I hate everything about…', 3);
+    if (/\b(LOVE|HATE)\s+(LOVE|HATE)\b/.test(m)) add('ReactionFormation', 'CAPS LOVE/HATE stack', 3);
+
+    // Intellectualization: jargon stacking · over-abstraction
+    const jargon = ['paradigm','epistemological','ontological','synergistic','holistic','meta-cognitive','dialectic','phenomenological','heuristic','frameworks','optimisation','optimization','scaffolding','substrate','emergent properties','first principles','systemic','axiomatic'];
+    const hits = jargon.filter(j => lo.includes(j));
+    if (hits.length >= 3) add('Intellectualization', 'jargon-stack: ' + hits.slice(0,5).join(', '), Math.min(3, hits.length - 1));
+    // Word salad: very long sentences with abstract nouns and no concrete details
+    const longSentence = (m.match(/[^.!?]{180,}/g) || []).length;
+    if (longSentence >= 1 && hits.length >= 2) add('Intellectualization', 'long abstract sentence (no concrete grounding)', 2);
+
+    // Healthy signals (concrete details · named feelings · direct asks)
+    let healthy = 0;
+    if (/\bi feel\b/i.test(m) && !/i feel like (everyone|nobody|always)/i.test(m)) healthy++;
+    if (/\b(can you|could you|please|would you)\b.*\?/i.test(m)) healthy++;
+    if (/\b(£|\$|€)\s?\d/.test(m)) healthy++; // concrete money
+    if (/\b\d{1,4}\s?(users|customers|clients|months|weeks|years|days)\b/i.test(m)) healthy++; // concrete metrics
+    if (/\bi (don'?t know|am unsure|might be wrong)\b/i.test(m)) healthy++; // owned uncertainty
+
+    // Dominant mechanism (highest severity)
+    let dominant = null;
+    if (detected.length) {
+      const sorted = [...detected].sort((a,b)=>b.severity-a.severity);
+      dominant = sorted[0].mechanism;
+    }
+    const total_severity = detected.reduce((a,b)=>a+b.severity, 0);
+    return { detected, dominant, healthy_signal_count: healthy, total_severity };
+  }
+
+  // ─── Lens 3 · Sales 101 buyer-stance read ───────────────────────
+  function lensSales101(message, tool) {
+    const m = (message || '').toString();
+    const lo = lower(m);
+    const signals = [];
+
+    // BUYER_SEEKING: specific pain · urgency · qualifying questions
+    let buyer = 0;
+    if (/\b(losing|wasting|spending|costs?)\s+(£|\$|€|\d+|hours|days|money|time)\b/i.test(m)) { buyer += 3; signals.push('named-pain-cost'); }
+    if (/\b(urgent|asap|by (?:next|the) (?:week|month)|deadline|launching)\b/i.test(m)) { buyer += 3; signals.push('urgency'); }
+    if (/\b(how much|what does it cost|pricing|price|how do i (?:buy|get started|sign up))\b/i.test(m)) { buyer += 4; signals.push('qualifying-q'); }
+    if (/\b(my (?:client|customer|team|org|company|business))\b/i.test(m)) { buyer += 2; signals.push('owned-context'); }
+
+    // TIRE_KICKER: vague interest · no pain · no urgency
+    let kicker = 0;
+    if (/\b(just (?:curious|looking|browsing|checking)|maybe|might|someday|eventually|wondering)\b/i.test(m)) { kicker += 3; signals.push('vague-interest'); }
+    if (m.length > 0 && m.length < 60 && !buyer) { kicker += 2; signals.push('thin-message'); }
+    if (/\binteresting\b/i.test(m) && !/\bbecause\b/i.test(m)) { kicker += 2; signals.push('interesting-no-why'); }
+
+    // COMPETITOR: architecture probes · no biz context
+    let comp = 0;
+    if (/\b(how do you (?:build|architect|implement|scale)|what (?:stack|framework|database))\b/i.test(m)) { comp += 4; signals.push('architecture-probe'); }
+    if (/\b(open[- ]?source|github|repo)\b/i.test(m) && !tool) { comp += 1; signals.push('source-probe'); }
+    if (/\b(competitive analysis|benchmark|compare to|vs\.?\s)\b/i.test(m)) { comp += 3; signals.push('comparison-frame'); }
+
+    // BUILDER_PEER: talks about own builds · mutual respect frame
+    let peer = 0;
+    if (/\b(i (?:built|made|ship(?:ped)?|wrote|created)|my (?:tool|project|app|build))\b/i.test(m)) { peer += 4; signals.push('own-builds'); }
+    if (tool && tool.length > 5) { peer += 3; signals.push('tool-url-attached'); }
+    if (/\b(respect|love what you|been following|fan of your)\b/i.test(m) && /\bbuild\b/i.test(m)) { peer += 2; signals.push('peer-respect'); }
+    if (/\b(guild|mesh|estate|sovereign|substrate)\b/i.test(m)) { peer += 2; signals.push('estate-vocabulary'); }
+
+    // NOISE: fan mail · congrats · no signal
+    let noise = 0;
+    if (/\b(congrats|congratulations|amazing work|well done|great job|nice site|cool site)\b/i.test(m) && m.length < 200) { noise += 4; signals.push('fan-mail'); }
+    if (m.length > 0 && m.length < 30) { noise += 2; signals.push('tiny-message'); }
+    if (!m.trim()) { noise += 5; signals.push('empty-message'); }
+
+    const scores = { BUYER_SEEKING: buyer, TIRE_KICKER: kicker, COMPETITOR: comp, BUILDER_PEER: peer, NOISE: noise };
+    const ranked = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    const top = ranked[0];
+    const stance = (top && top[1] > 0) ? top[0] : 'UNREAD';
+    const confidence = top ? Math.min(100, top[1] * 12) : 0;
+
+    const RECOMMEND = {
+      BUYER_SEEKING: 'reply',
+      BUILDER_PEER:  'guild-invite',
+      TIRE_KICKER:   'archive',
+      COMPETITOR:    'archive',
+      NOISE:         'archive',
+      UNREAD:        'reply',
+    };
+    return { stance, confidence, signals, recommended_next: RECOMMEND[stance] };
+  }
+
+  // ─── Lens 4 · Alex's swear-word ladder (EXTENSION POINT) ────────
+  // 3 tiers · seed empty · Alex pushes runtime additions via
+  // FallVetter.lists.SWEAR_LADDER.tier1_mild.push('...')
+  //
+  // Tiering convention (document for Alex):
+  //   tier1_mild   · soft expletives · -10 score each hit · OK in passion
+  //                  examples Alex MIGHT fill: damn, crap, hell, bloody
+  //   tier2_medium · stronger swearing · -25 score each hit · review-band
+  //                  examples Alex MIGHT fill: fuck, shit, bullshit
+  //                  (note: v1 PROFANITY list also catches these · ladder
+  //                   gives Alex fine-grained per-tier control independent
+  //                   of v1's block-all PROFANITY behaviour)
+  //   tier3_severe · slurs · threats · harassment · AUTO-BLOCK regardless
+  //                  examples Alex MIGHT fill: targeted slurs, threats
+  //
+  // All matching uses leetNorm (l33t/4lt characters fold to base letters)
+  // so "sh1t" matches "shit" entries.
+  const SWEAR_LADDER = {
+    tier1_mild:   [], // ALEX TO FILL · soft expletives · -10/hit
+    tier2_medium: [], // ALEX TO FILL · stronger · -25/hit
+    tier3_severe: [], // ALEX TO FILL · slurs/threats · AUTO-BLOCK
+  };
+
+  function lensLadder(message, name) {
+    const text = leetNorm((message || '') + ' ' + (name || ''));
+    const samples = [];
+    function countHits(list) {
+      if (!list || !list.length) return 0;
+      let n = 0;
+      for (const w of list) {
+        const ln = leetNorm(w);
+        if (!ln) continue;
+        // Whole-word-ish match · word boundary on either side in normalized text
+        const re = new RegExp('(^|\\s)' + ln.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '(\\s|$)', 'g');
+        const m = text.match(re);
+        if (m) { n += m.length; samples.push(w); }
+      }
+      return n;
+    }
+    const t1 = countHits(SWEAR_LADDER.tier1_mild);
+    const t2 = countHits(SWEAR_LADDER.tier2_medium);
+    const t3 = countHits(SWEAR_LADDER.tier3_severe);
+    const score_impact = -(t1 * 10 + t2 * 25 + t3 * 50);
+    const auto_block = t3 > 0;
+    return { tier1_hits: t1, tier2_hits: t2, tier3_hits: t3, samples, score_impact, auto_block };
+  }
+
+  // ─── Synthesis · the prophetic verdict ──────────────────────────
+  function synthesize(base, jung, freud, sales, ladder) {
+    // Sales101 buyer bonus (up to +15)
+    const stanceBonus = sales.stance === 'BUYER_SEEKING' ? Math.min(15, Math.round(sales.confidence * 0.15))
+                      : sales.stance === 'BUILDER_PEER'  ? Math.min(12, Math.round(sales.confidence * 0.12))
+                      : 0;
+    let score = base.score - (freud.total_severity * 5) + ladder.score_impact + stanceBonus;
+    score = Math.max(0, Math.min(100, Math.round(score)));
+
+    // Decision floor
+    let decision;
+    const hasBaseBlock = base.decision === 'block';
+    const hardBlock = ladder.auto_block || freud.total_severity >= 6 || hasBaseBlock;
+    if (hardBlock) decision = 'block';
+    else if (score < 40) decision = 'block';
+    else if (score < 70) decision = 'review';
+    else decision = 'allow';
+
+    // Confidence in reading
+    const evidenceCount = (jung.signals.length) + freud.detected.length + sales.signals.length + ladder.samples.length;
+    const confidence = evidenceCount >= 6 ? 'high' : evidenceCount >= 3 ? 'medium' : 'low';
+
+    // Reading summary · cite the lens results, don't dress them up
+    const fragments = [];
+    fragments.push(jung.archetype + (jung.strength ? ' (Jung str ' + jung.strength + ')' : ' (no archetype signal)'));
+    if (freud.dominant) fragments.push(freud.dominant.toLowerCase() + ' defense');
+    fragments.push(sales.stance.toLowerCase().replace(/_/g,'-'));
+    if (ladder.tier1_hits + ladder.tier2_hits + ladder.tier3_hits) {
+      fragments.push('ladder t1=' + ladder.tier1_hits + ' t2=' + ladder.tier2_hits + ' t3=' + ladder.tier3_hits);
+    }
+    fragments.push(sales.recommended_next === 'guild-invite' ? 'invite to guild'
+                : sales.recommended_next === 'reply'        ? 'reply'
+                : sales.recommended_next === 'archive'      ? 'archive'
+                : 'review');
+    const summary = fragments.join(' · ');
+
+    return { score, decision, summary, confidence };
+  }
+
+  function read(input, options) {
+    const opts = options || {};
+    const name     = input && input.name;
+    const email    = input && input.email;
+    const linkedin = input && input.linkedin;
+    const github   = input && input.github;
+    const tool     = input && input.tool;
+    const message  = input && (input.message || input.what || input.body);
+
+    // Always run v1 base
+    const base  = vet({ name, email, linkedin, github, tool, message }, { _skipBroadcast: true });
+    const jung  = lensJung(message, name);
+    const freud = lensFreud(message);
+    const sales = lensSales101(message, tool);
+    const ladder= lensLadder(message, name);
+
+    const syn = synthesize(base, jung, freud, sales, ladder);
+
+    const audit = {
+      ts: Date.now(),
+      version: 'fall-vetter/2.0-cassandra',
+      input_hash: hashish((name||'') + '|' + (email||''))
+    };
+
+    const result = {
+      score: syn.score,
+      decision: syn.decision,
+      archetype: jung.archetype,
+      reading: { summary: syn.summary, confidence: syn.confidence },
+      lenses: { base, jung, freud, sales101: sales, ladder },
+      audit
+    };
+
+    // Broadcast to fall-signal (estate-wide audit)
+    try {
+      if (typeof BroadcastChannel !== 'undefined' && !opts._skipBroadcast) {
+        const ch = new BroadcastChannel('fall-signal');
+        ch.postMessage({
+          kind: 'fall_vetter_result',
+          payload: {
+            score: result.score,
+            decision: result.decision,
+            archetype: result.archetype,
+            reading: result.reading,
+            sales_stance: sales.stance,
+            recommended_next: sales.recommended_next,
+            tier3_hits: ladder.tier3_hits,
+            freud_dominant: freud.dominant,
+            audit
+          }
+        });
+        ch.close();
+      }
+    } catch (_) {}
+
+    return result;
+  }
+
+  // Allow vet(input, {mode:'cassandra'}) to dispatch to read()
+  const _vetOriginal = vet;
+  function vetDispatch(input, options) {
+    if (options && options.mode === 'cassandra') return read(input, options);
+    return _vetOriginal(input, options);
+  }
+
   // ─── public API ───────────────────────────────────────────────
   const api = {
-    vet,
-    version: '1.0',
+    vet: vetDispatch,
+    read,
+    version: '2.0-cassandra',
     // Expose deny lists so admins can extend at runtime
-    lists: { PROFANITY, WINDUP, DISPOSABLE_DOMAINS, ROLE_LOCALS, RED_FLAGS },
+    lists: { PROFANITY, WINDUP, DISPOSABLE_DOMAINS, ROLE_LOCALS, RED_FLAGS, SWEAR_LADDER, JUNG_ARCHETYPES },
     // Utility — wire to a button click
     attach: function(opts) {
       const o = opts || {};
